@@ -72,7 +72,7 @@ const C = { bg:"#58595B", bgCard:"#6F7173", bgInput:"#7A7C7E", yellow:"#FFE100",
 const FONT = "'Inter', system-ui, Arial, sans-serif";
 
 const STEPS_CONFIG = [
-  { num:1, icon:"☀️", title:"Exposure",      subtitle:"Calibrating presence & defining the challenge",      tagLabel:"Frame the Challenge",  tagBg:C.yellow,   tagColor:C.dark,  instruction:"Choose an image that represents your leadership challenge – the one that illuminates or shadows your management frame right now.",   nextLabel:"Continue to Step 2" },
+  { num:1, icon:"☀️", title:"Exposure",      subtitle:"Calibrating presence & defining the challenge",      tagLabel:"Frame the Challenge",  tagBg:C.yellow,   tagColor:C.dark,  instruction:"Choose an image that represents your leadership challenge – the one that illuminates or casts a shadow over your leadership right now.",   nextLabel:"Continue to Step 2" },
   { num:2, icon:"🎯", title:"Depth of Field",   subtitle:"Sharpening focus & priorities",    tagLabel:"Relevant Focus",tagBg:C.blue,     tagColor:C.dark,  instruction:"Choose an image that symbolizes the leadership focus you want to emphasize.",                               nextLabel:"Continue to Step 3" },
   { num:3, icon:"🌑", title:"Shadows",      subtitle:"Identifying hidden team dynamics", tagLabel:"Expose Barriers", tagBg:"#6F7173",  tagColor:C.white, instruction:"Every team holds 'shadows' – dynamics, fears and tensions not openly discussed. Choose an image that represents barriers.", nextLabel:"Continue to Step 4" },
   { num:4, icon:"📐", title:"Composition", subtitle:"Moving to concrete action",           tagLabel:"Take Action", tagBg:"#A2A2A1",  tagColor:C.dark,  instruction:"Choose an image that represents the direction you want to go – so we can build a concrete action plan together.", nextLabel:"Finish & Get Summary" },
@@ -433,9 +433,9 @@ function SliderInput({value=5,onChange}){
   return(
     <div>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:6,direction:"ltr"}}>
-        <span style={{color:C.muted,fontSize:11,fontFamily:FONT}}>"Very High"</span>
-        <span style={{color:C.yellow,fontWeight:700,fontSize:16,fontFamily:FONT}}>{value}/10</span>
         <span style={{color:C.muted,fontSize:11,fontFamily:FONT}}>"Very Low"</span>
+        <span style={{color:C.yellow,fontWeight:700,fontSize:16,fontFamily:FONT}}>{value}/10</span>
+        <span style={{color:C.muted,fontSize:11,fontFamily:FONT}}>"Very High"</span>
       </div>
       <input type="range" min="1" max="10" value={internal} style={{direction:"ltr"}}
         onChange={handleChange}/>
