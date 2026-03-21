@@ -75,7 +75,7 @@ const STEPS_CONFIG = [
   { num:1, icon:"☀️", title:"Exposure",      subtitle:"Calibrating presence & defining the challenge",      tagLabel:"Frame the Challenge",  tagBg:C.yellow,   tagColor:C.dark,  instruction:"Choose an image that represents your leadership challenge – the one that illuminates or casts a shadow over your leadership right now.",   nextLabel:"Continue to Step 2" },
   { num:2, icon:"🎯", title:"Depth of Field",   subtitle:"Sharpening focus & priorities",    tagLabel:"Relevant Focus",tagBg:C.blue,     tagColor:C.dark,  instruction:"Choose an image that symbolizes the leadership focus you want to emphasize.",                               nextLabel:"Continue to Step 3" },
   { num:3, icon:"🌑", title:"Shadows",      subtitle:"Identifying hidden team dynamics", tagLabel:"Expose Barriers", tagBg:"#6F7173",  tagColor:C.white, instruction:"Every team holds 'shadows' – dynamics, fears and tensions not openly discussed. Choose an image that represents your team's barriers.", nextLabel:"Continue to Step 4" },
-  { num:4, icon:"📐", title:"Composition", subtitle:"Moving to concrete action",           tagLabel:"Take Action", tagBg:"#A2A2A1",  tagColor:C.dark,  instruction:"Choose an image that represents the direction you want to go – so we can build a concrete action plan together.", nextLabel:"Finish & Get Summary" },
+  { num:4, icon:"📐", title:"Composition", subtitle:"Moving to concrete action",           tagLabel:"Take Action", tagBg:"#A2A2A1",  tagColor:C.dark,  instruction:"Choose an image that represents the direction you are heading – so we can build a concrete action plan together.", nextLabel:"Finish & Get Summary" },
 ];
 
 const STEP_QUESTIONS = {
@@ -102,8 +102,8 @@ const STEP_QUESTIONS = {
   ],
   4:[
     {key:"challenge",label:"What does this image represent in terms of reframing the challenge?",subtitle:"Describe briefly",placeholder:"This represents for me...",type:"textarea"},
-    {key:"teamIdeal",label:"What is your ideal team composition?",placeholder:"In my team there is...",type:"textarea"},
-    {key:"goal",     label:"What goal would you like to achieve with your team?",placeholder:"I want to reach a state where...",type:"textarea"},
+    {key:"teamIdeal",label:"What is your ideal team composition?",placeholder:"In my ideal team, there are...",type:"textarea"},
+    {key:"goal",     label:"What goal would you like to achieve with your team?",placeholder:"My goal is to reach a state where...",type:"textarea"},
     {key:"tomorrow", label:"What is the first action you will take tomorrow morning?",subtitle:"Specific and actionable",placeholder:"Tomorrow morning I will...",type:"textarea"},
     {key:"belief",  label:"How much do you believe you can create change?",type:"slider"},
   ],
