@@ -74,7 +74,7 @@ const FONT = "'Inter', system-ui, Arial, sans-serif";
 const STEPS_CONFIG = [
   { num:1, icon:"☀️", title:"Exposure",      subtitle:"Calibrating presence & defining the challenge",      tagLabel:"Frame the Challenge",  tagBg:C.yellow,   tagColor:C.dark,  instruction:"Choose an image that represents your leadership challenge – the one that illuminates or casts a shadow over your leadership right now.",   nextLabel:"Continue to Step 2" },
   { num:2, icon:"🎯", title:"Depth of Field",   subtitle:"Sharpening focus & priorities",    tagLabel:"Relevant Focus",tagBg:C.blue,     tagColor:C.dark,  instruction:"Choose an image that symbolizes the leadership focus you want to emphasize.",                               nextLabel:"Continue to Step 3" },
-  { num:3, icon:"🌑", title:"Shadows",      subtitle:"Identifying hidden team dynamics", tagLabel:"Expose Barriers", tagBg:"#6F7173",  tagColor:C.white, instruction:"Every team holds 'shadows' – dynamics, fears and tensions not openly discussed. Choose an image that represents barriers.", nextLabel:"Continue to Step 4" },
+  { num:3, icon:"🌑", title:"Shadows",      subtitle:"Identifying hidden team dynamics", tagLabel:"Expose Barriers", tagBg:"#6F7173",  tagColor:C.white, instruction:"Every team holds 'shadows' – dynamics, fears and tensions not openly discussed. Choose an image that represents your team's barriers.", nextLabel:"Continue to Step 4" },
   { num:4, icon:"📐", title:"Composition", subtitle:"Moving to concrete action",           tagLabel:"Take Action", tagBg:"#A2A2A1",  tagColor:C.dark,  instruction:"Choose an image that represents the direction you want to go – so we can build a concrete action plan together.", nextLabel:"Finish & Get Summary" },
 ];
 
@@ -95,10 +95,10 @@ const STEP_QUESTIONS = {
     {key:"pressure",   label:"Pressure gauge – Intensity of focus",type:"slider"},
   ],
   3:[
-    {key:"hidden", label:"What does this image represent in terms of what is hidden from view?",placeholder:"This represents for me...",type:"textarea"},
+    {key:"hidden", label:"What does this image reveal about what is hidden from view?",placeholder:"This represents for me...",type:"textarea"},
     {key:"fear",   label:"What is your leadership fear?",subtitle:"Personal question – answer honestly",placeholder:"That I won't...",type:"textarea"},
-    {key:"barrier",label:"What is the main barrier in your team?",subtitle:"Dynamic, person, issue",placeholder:"Lack of listening / lack of trust...",type:"textarea"},
-    {key:"worry",  label:"Worry gauge – how much does this control you?",type:"slider"},
+    {key:"barrier",label:"What is the main barrier in your team?",subtitle:"e.g., a team dynamic, a specific person, or an issue",placeholder:"Lack of listening / lack of trust...",type:"textarea"},
+    {key:"worry",  label:"Worry gauge – how much is this holding you back?",type:"slider"},
   ],
   4:[
     {key:"challenge",label:"What does this image represent in terms of reframing the challenge?",subtitle:"Describe briefly",placeholder:"This represents for me...",type:"textarea"},
