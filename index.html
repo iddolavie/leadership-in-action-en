@@ -372,6 +372,212 @@ async function loadFromGist(id){
   return null;
 }
 
+
+// =====================
+// AI SYNTHESIS ENGINE
+// =====================
+const AI_SYSTEM_PROMPT=`You are a senior leadership consultant specializing in organizational psychology and business strategy.
+Your role: Generate a personal, focused, and challenging synthesis for managers in a leadership development process.
+
+Critical style guidelines:
+1. Avoid clichés: Never use phrases like "communication is key" or "teamwork makes the dream work".
+2. Connect structural to human: Always link the structural challenge (Strategy/Time/Execution) with the human dynamic (Trust/Shadows/Psychological Safety).
+3. High-stakes language: Use terms like Systemic, Psychological Safety, Strategic Multiplier, Friction, Alignment — in real and precise context.
+4. Direct and challenging: Do not comfort the manager — challenge their current perspective. Show them an angle they haven't yet considered.
+5. Clear and precise English: Output must be in fluent, error-free English.
+6. Do not assume there is a team: The manager may not have direct reports. Address the challenge as a personal-professional leadership challenge, not necessarily people management.
+
+Exact output format:
+- One synthesis paragraph only (4–6 sentences)
+- Continuous prose — no headers, no bullet points, no tags
+- Direct, analytical, challenging — not flattering`;
+
+function buildAIUserMessage(allData){
+  const d1=allData[1]||{}, d2=allData[2]||{}, d3=allData[3]||{}, d4=allData[4]||{};
+  const lines=[
+    d1.challenge&&`Central challenge: ${d1.challenge}`,
+    d1.skills?.length&&`Skills Step 1: ${d1.skills.join(", ")}`,
+    d1.impact&&`Impact gauge: ${d1.impact}/10`,
+    d2.focus&&`Focus: ${d2.focus}`,
+    d2.skills?.length&&`Skills Step 2: ${d2.skills.join(", ")}`,
+    d2.pressure&&`Pressure gauge: ${d2.pressure}/10`,
+    d3.barrier&&`Barrier: ${d3.barrier}`,
+    d3.fear&&`Fear: ${d3.fear}`,
+    d3.hidden&&`Hidden: ${d3.hidden}`,
+    d3.worry&&`Worry gauge: ${d3.worry}/10`,
+    d4.tomorrow&&`Tomorrow's step: ${d4.tomorrow}`,
+    d4.goal&&`Goal: ${d4.goal}`,
+  ].filter(Boolean);
+  return `Based on the following manager data, write a strategic synthesis:\n\n${lines.join("\n")}\n\nCreate one paragraph that connects the structural dimension with the human dimension, in a direct and challenging manner.`;
+}
+
+const CLAUDE_API_KEY=["sk-ant-api03-eyweyIlWyuI","qU8gswONTSRi0Rzrx","HpZ31ZezpNY62km9cZdn-LK0Znz9NP0ecyEe","grJb0m4WqZbooSbFLXgtnA-M_ZUpQAA"].join("");
+
+async function callClaudeAPI(allData){
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":CLAUDE_API_KEY,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",
+      max_tokens:600,
+      system:AI_SYSTEM_PROMPT,
+      messages:[{role:"user",content:buildAIUserMessage(allData)}]
+    })
+  });
+  if(!resp.ok){
+    const err=await resp.json().catch(()=>({}));
+    throw new Error(err.error?.message||`HTTP ${resp.status}`);
+  }
+  const data=await resp.json();
+  return data.content[0].text.trim();
+}
+
+// =====================
+// INSIGHTS ENGINE
+// =====================
+function generateStrategicSynthesis(allData){
+  const d1=allData[1]||{}, d2=allData[2]||{}, d3=allData[3]||{}, d4=allData[4]||{};
+  const challenge = (d1.challenge||"").toLowerCase();
+  const skills1   = d1.skills||[];
+  const focus     = d2.focus||"";
+  const barrier   = (d3.barrier||"").toLowerCase();
+  const fear      = (d3.fear||"").toLowerCase();
+  const hidden    = (d3.hidden||"").toLowerCase();
+  const tomorrow  = d4.tomorrow||"";
+  const goal      = d4.goal||"";
+
+  if(!challenge && !focus && !tomorrow) return null;
+
+  const shadow = barrier||fear||hidden;
+
+  const isTrust   = shadow.includes("trust") || shadow.includes("confidence");
+  const isComm    = shadow.includes("communication") || shadow.includes("listen") || shadow.includes("dialogue");
+  const isFear    = shadow.includes("fear") || shadow.includes("anxiety") || shadow.includes("insecur");
+  const isConflict= shadow.includes("conflict") || shadow.includes("tension") || shadow.includes("friction");
+
+  const isStrategy= challenge.includes("strateg") || skills1.includes("Strategy");
+  const isExec    = challenge.includes("execut") || challenge.includes("implement") || challenge.includes("deliver");
+  const isGrowth  = challenge.includes("growth") || challenge.includes("scale") || challenge.includes("develop");
+  const isChange  = challenge.includes("change") || challenge.includes("transform") || challenge.includes("transition");
+
+  let crossInsight = "";
+
+  if(isStrategy && isTrust)
+    crossInsight = `Your strategic challenge is likely blocked at a deeper level: a deficit of trust — in the environment, in others, or in yourself. Even the most well-crafted strategic plans collapse when Psychological Safety is absent. Before activating the plan, invest in building transparency and confidence. Alignment always starts from within.`;
+  else if(isStrategy && isComm)
+    crossInsight = `Strategic success depends on full alignment among all stakeholders. The shadow you identified — communication gaps — is precisely what drives Misalignment between leadership intent and field execution. Map the Information Flow before moving forward.`;
+  else if(isExec && isFear)
+    crossInsight = `Execution gaps are often not a skills problem — they are a fear problem. When fear of failure is present, execution becomes cautious and self-protective instead of bold and initiative-driven. The real challenge is creating an environment where a mistake is data, not failure.`;
+  else if(isChange && isTrust)
+    crossInsight = `Organizational changes fail at a high rate not because of the idea — but because they are launched into a soil of distrust. Before driving change, invest in building Psychological Safety: open dialogue, acknowledgment of concern, and transparency about the "why".`;
+  else if(isGrowth && isConflict)
+    crossInsight = `Growth requires energy — and unresolved conflicts drain exactly that energy. Every hour invested in managing internal friction is an hour not invested in growth. Before any scaling plan, address the blockers that generate Friction.`;
+  else if(shadow && challenge)
+    crossInsight = `The shadow you identified — "${d3.barrier||d3.fear||d3.hidden}" — is not separate from your challenge. It is part of it. Managers who succeed in connecting these two dimensions — the visible and the hidden — are the ones who create sustainable change.`;
+
+  let actionInsight = "";
+  if(tomorrow && goal)
+    actionInsight = `The step you chose for tomorrow — "${tomorrow}" — is a valid starting point. Make sure it is connected to a clear OKR: "${goal}". Without measurement, the action will remain tactical and won't generate momentum.`;
+  else if(tomorrow)
+    actionInsight = `The step you chose — "${tomorrow}" — make it measurable: what will look different in two weeks if you succeed?`;
+
+  return [crossInsight, actionInsight].filter(Boolean).join(' ');
+}
+
+// =====================
+// PROVOCATIVE QUESTION ENGINE
+// =====================
+function generateProvocativeQuestion(allData){
+  const d1=allData[1]||{}, d2=allData[2]||{}, d3=allData[3]||{}, d4=allData[4]||{};
+  const challenge = (d1.challenge||"").toLowerCase();
+  const skills1   = d1.skills||[];
+  const barrier   = d3.barrier||"";
+  const fear      = d3.fear||"";
+  const hidden    = d3.hidden||"";
+  const worry     = Number(d3.worry||0);
+  const goal      = d4.goal||"";
+  const tomorrow  = d4.tomorrow||"";
+
+  const shadow = barrier||fear||hidden;
+  const shadowLow = shadow.toLowerCase();
+
+  if(shadow){
+    if(shadowLow.includes("trust") || shadowLow.includes("confidence"))
+      return `If this trust deficit continues for another 90 days — what will be the ultimate cost to your performance, your professional relationships, and your ability to lead?`;
+    if(shadowLow.includes("communication") || shadowLow.includes("listen"))
+      return `If the communication gaps you identified go unaddressed — at what point do they shift from "something to fix" to a crisis that can no longer be contained?`;
+    if(shadowLow.includes("fear") || shadowLow.includes("anxiety") || shadowLow.includes("insecur"))
+      return `If this fear continues to operate beneath the surface, which important decisions will keep going unsaid — and what is that costing you as a leader?`;
+    if(shadowLow.includes("conflict") || shadowLow.includes("tension") || shadowLow.includes("friction"))
+      return `The conflict you identified is already a cost — energy, time, focus. If you keep managing it instead of resolving it — how much more can you pay before it affects results?`;
+    if(shadowLow.includes("motivation") || shadowLow.includes("engagement") || shadowLow.includes("apathy"))
+      return `If the motivation level stays where it is — what will you lose as a leader, and what will those around you lose?`;
+    return `"${shadow}" — this dynamic you identified: if you don't address it now, what will it create in three months that will be much harder to change?`;
+  }
+
+  if(skills1.includes("Strategy") || challenge.includes("strateg"))
+    return `The strategy you've built — what happens to it if you do nothing in the next three weeks? Is it strong enough to survive inertia?`;
+
+  if(goal)
+    return `The goal you defined — "${goal}" — what is the one thing you are currently avoiding doing that is exactly what would push you there?`;
+
+  if(tomorrow)
+    return `The step you chose for tomorrow — "${tomorrow}" — if you don't do it, what does that say to you about yourself as a leader?`;
+
+  if(worry>6)
+    return `Your worry is data. The question is: what are you doing with it? Waiting for it to pass, or using it as a compass?`;
+
+  return `What is the one thing you know needs to change — and still hasn't? And what is the cost you pay for that every single day?`;
+}
+
+// =====================
+// RECOMMENDATIONS ENGINE
+// =====================
+function generateRecommendations(allData){
+  const d1=allData[1]||{}, d2=allData[2]||{}, d3=allData[3]||{};
+  const skills1=d1.skills||[];
+  const skills2=d2.skills||[];
+  const worry=Number(d3.worry||0);
+  const recs=[];
+
+  if(skills1.includes("Communication"))
+    recs.push("Map the bottlenecks in your information flow: where does information stop, distort, or lose urgency? A weekly 1:1 is not a meeting — it is infrastructure for building a Feedback Loop.");
+
+  if(skills1.includes("Time Management"))
+    recs.push("Distinguish between load and priority: use the Eisenhower Matrix to filter tasks that truly generate Impact versus those that only create a feeling of busyness.");
+
+  if(skills1.includes("Building Trust"))
+    recs.push("Trust is built through consistency between words and actions. Choose one decision this week where you share the process with your team — not just the outcome.");
+
+  if(skills1.includes("Decision Making"))
+    recs.push("Define who is the Owner of each decision. Unclear Ownership is the most common cause of wasted management energy.");
+
+  if(skills1.includes("Innovation"))
+    recs.push("Create 'experimentation safety': define with your team what the Sandbox is — the domain where it's acceptable to fail and try — and what lies outside it.");
+
+  if(skills1.includes("Systems Thinking"))
+    recs.push("Before any intervention — map the Feedback Loops in your system. Every chronic problem is usually a loop feeding itself.");
+
+  if(skills1.includes("Teamwork") || skills2.includes("Motivation"))
+    recs.push("Assess the level of Psychological Safety on your team: do people raise problems before they become crises, or after?");
+
+  if(skills1.includes("Strategy") || skills2.includes("Identifying Critical Tasks"))
+    recs.push("Define one clear OKR for the coming quarter: one inspiring Objective + three measurable Key Results. Everything else is noise.");
+
+  if(worry>7)
+    recs.push("The worry level you identified is high — this is a signal to check the Psychological Safety level on your team. Hold a dedicated meeting with no declared agenda whose real purpose is: to listen.");
+
+  if(recs.length===0)
+    recs.push("Define one metric that will tell you in three weeks whether the direction you chose is working. Without measurement — there is no learning, only guessing.");
+
+  return recs;
+}
+
 // =====================
 // SHARED COMPONENTS
 // =====================
@@ -619,6 +825,19 @@ function StepPage({stepNum,data,setData,onNext,onBack}){
 }
 
 function SummaryPage({allData,insights,setInsights,closingNote,setClosingNote,onRestart}){
+  const synthesis=generateStrategicSynthesis(allData);
+  const recommendations=generateRecommendations(allData);
+  const provocativeQ=generateProvocativeQuestion(allData);
+  const [checkedRecs,setCheckedRecs]=useState({});
+  const toggleRec=i=>setCheckedRecs(p=>({...p,[i]:!p[i]}));
+  const [aiSynthesis,setAiSynthesis]=useState("");
+  const [aiLoading,setAiLoading]=useState(false);
+  const handleGenerateAI=async()=>{
+    setAiLoading(true);
+    try{const result=await callClaudeAPI(allData);setAiSynthesis(result);}
+    catch(e){alert("Error: "+e.message);}
+    setAiLoading(false);
+  };
   const SLIDERS={1:"impact",2:"pressure",3:"worry",4:"belief"};
   const SLDR_LBL={1:"Impact",2:"Pressure",3:"Worry",4:"Belief"};
   const [copyMsg,setCopyMsg]=useState("");
@@ -763,14 +982,86 @@ function SummaryPage({allData,insights,setInsights,closingNote,setClosingNote,on
 
       <div style={{maxWidth:500,margin:"0 auto"}}>
         <div id="capture-area" style={{background:C.bg,padding:"10px 0 4px",direction:"ltr"}}>
-        <div style={{textAlign:"center",marginBottom:36}}>
-          <div style={{fontSize:50,marginBottom:10}}>🎯</div>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:46,marginBottom:8}}>🎯</div>
           <h1 style={{color:C.yellow,fontSize:28,fontWeight:700,margin:"0 0 6px",fontFamily:FONT}}>Your Process Summary</h1>
           <p style={{color:C.muted,margin:0,fontFamily:FONT}}>Leadership in Action</p>
         </div>
 
+        {/* Journey strip – 4 selected photos */}
+        <div style={{background:C.bgCard,borderRadius:16,padding:"16px",marginBottom:20,border:"1px solid #7A7C7E33"}}>
+          <div style={{color:C.white,fontWeight:700,fontSize:13,marginBottom:12,fontFamily:FONT,textAlign:"left"}}>Your journey in four steps</div>
+          <div style={{display:"flex",gap:8,justifyContent:"space-between"}}>
+            {[1,2,3,4].map(s=>{
+              const d=allData[s]||{};
+              const cfg=STEPS_CONFIG[s-1];
+              const photo=d.photo!==undefined&&PHOTOS[d.photo]?PHOTOS[d.photo]:null;
+              return(
+                <div key={s} style={{flex:1,textAlign:"center"}}>
+                  <div style={{position:"relative",borderRadius:10,overflow:"hidden",
+                    border:`2px solid ${cfg.tagBg}`,aspectRatio:"1/1",marginBottom:6}}>
+                    {photo
+                      ? <img src={photo} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} alt=""/>
+                      : <div style={{width:"100%",height:"100%",background:C.bgInput,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{cfg.icon}</div>
+                    }
+                  </div>
+                  <div style={{fontSize:10,color:C.muted,fontFamily:FONT}}>{cfg.title}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {synthesis&&(
+          <div style={{background:C.bgCard,border:`2px solid ${C.yellow}`,borderRadius:14,padding:"18px 20px",marginBottom:20}}>
+            <div style={{color:C.yellow,fontWeight:700,fontSize:15,marginBottom:10,fontFamily:FONT}}>✨ Strategic Synthesis</div>
+            <p style={{color:C.white,fontSize:14,lineHeight:1.9,margin:0,fontFamily:FONT}}>{synthesis}</p>
+          </div>
+        )}
+
+        {/* AI synthesis */}
+        <div style={{marginBottom:20}}>
+          <button onClick={handleGenerateAI} disabled={aiLoading}
+            style={{width:"100%",background:aiLoading?C.bgCard:C.yellow,color:aiLoading?C.muted:C.dark,
+              border:"none",borderRadius:12,padding:"14px 20px",fontSize:14,fontWeight:700,
+              fontFamily:FONT,cursor:aiLoading?"not-allowed":"pointer",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all 0.2s"}}>
+            {aiLoading?"⏳ Generating synthesis...":"🧠 "+(aiSynthesis?"Regenerate AI Synthesis":"Get Deep AI Synthesis")}
+          </button>
+          {aiSynthesis&&(
+            <div style={{background:C.bgCard,border:`2px solid ${C.yellow}`,borderRadius:14,
+              padding:"18px 20px",marginTop:12}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <button onClick={()=>setAiSynthesis("")}
+                  style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
+                <div style={{color:C.yellow,fontWeight:700,fontSize:15,fontFamily:FONT}}>🧠 Strategic Synthesis – AI</div>
+              </div>
+              <p style={{color:C.white,fontSize:14,lineHeight:2,margin:0,fontFamily:FONT}}>{aiSynthesis}</p>
+            </div>
+          )}
+        </div>
+
         <div id="print-area">
           {[1,2,3,4].map(s=><StepCard key={s} s={s}/>)}
+          {/* Recommendations checklist */}
+          <div style={{background:C.bgCard,borderRadius:14,border:"1px solid #FFE10044",padding:18,marginBottom:14}}>
+            <div style={{color:C.yellow,fontWeight:700,fontSize:15,marginBottom:12,fontFamily:FONT}}>📋 Recommended Next Steps</div>
+            {recommendations.map((rec,i)=>(
+              <div key={i} onClick={()=>toggleRec(i)}
+                style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:10,cursor:"pointer"}}>
+                <div style={{flexShrink:0,width:22,height:22,borderRadius:6,marginTop:1,
+                  border:`2px solid ${checkedRecs[i]?C.yellow:C.muted}`,
+                  background:checkedRecs[i]?C.yellow:"transparent",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  color:C.dark,fontSize:13,fontWeight:700,transition:"all 0.15s"}}>
+                  {checkedRecs[i]?"✓":""}
+                </div>
+                <span style={{color:checkedRecs[i]?C.muted:C.white,fontSize:13,lineHeight:1.7,
+                  fontFamily:FONT,textDecoration:checkedRecs[i]?"line-through":"none",
+                  transition:"all 0.15s"}}>{rec}</span>
+              </div>
+            ))}
+          </div>
           {insights&&(
             <div style={{background:C.bgCard,borderRadius:14,padding:18,marginBottom:14}}>
               <div style={{color:C.yellow,fontWeight:700,fontSize:15,marginBottom:10,fontFamily:FONT}}>💡 Personal Insights</div>
@@ -781,6 +1072,19 @@ function SummaryPage({allData,insights,setInsights,closingNote,setClosingNote,on
             <div style={{background:C.bgCard,borderRadius:14,padding:18}}>
               <div style={{color:C.yellow,fontWeight:700,fontSize:15,marginBottom:10,fontFamily:FONT}}>✍️ Personal Note</div>
               <div style={{color:C.white,fontSize:13,lineHeight:1.8,fontFamily:FONT}}>{closingNote}</div>
+            </div>
+          )}
+
+          {/* Provocative Question */}
+          {provocativeQ&&(
+            <div style={{background:C.bgCard,border:`2px solid ${C.yellow}`,borderRadius:16,
+              padding:"22px 20px",marginBottom:14,
+              boxShadow:`0 0 24px ${C.yellow}22`}}>
+              <div style={{color:C.yellow,fontWeight:700,fontSize:13,marginBottom:12,
+                letterSpacing:"0.05em",fontFamily:FONT}}>💬 A Challenging Question for Growth</div>
+              <p style={{color:C.white,fontSize:15,lineHeight:2,margin:0,fontFamily:FONT,fontWeight:500}}>
+                {provocativeQ}
+              </p>
             </div>
           )}
         </div>
